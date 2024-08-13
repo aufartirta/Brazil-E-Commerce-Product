@@ -34,7 +34,7 @@ We can see the dominance of São Paulo, Rio de Janeiro, Belo Horizonte, and Curi
 
 ```sql
 --Identify the most ordered products; translate to English
-SELECT
+SELECT 
 	p.product_category_name,
 	t.product_category_name_english,
 	COUNT(oi.product_id) AS total_order
@@ -44,23 +44,24 @@ JOIN translations t ON p.product_category_name = t.product_category_name
 GROUP BY
 	p.product_category_name,
 	t.product_category_name_english
-ORDER BY total_order DESC;
+ORDER BY total_order DESC
+LIMIT 10;
 ```
 Result:
-|product_category_name|product_category_name|total_order|
+|product_category_name|product_category_name_english|total_order|
 |---|---|---|
-moveis_decoracao|furniture_decor|527
-cama_mesa_banho|bed_bath_table|488
-ferramentas_jardim|garden_tools|484
-ferramentas_jardim|garden_tools|392
-ferramentas_jardim|garden_tools|388
-ferramentas_jardim|garden_tools|373
-informatica_acessorios|computers_accessories|343
-relogios_presentes|watches_gifts|323
-beleza_saude|health_beautfy|281
-informatica_acessorios|computers_accessories|274
+cama_mesa_banho|bed_bath_table|11115
+beleza_saude|health_beauty|9670
+esporte_lazer|sports_leisure|8641
+moveis_decoracao|furniture_decor|8334
+informatica_acessorios|computers_accessories|7827
+utilidades_domesticas|housewares|6964
+relogios_presentes|watches_gifts|5991
+telefonia|telephony|4545
+ferramentas_jardim|garden_tools|4347
+automotivo|auto|4235
 
-Top-selling products are furniture decor, bed bath table, garden tools, computer accessories, watches gifts, and health beauty. Duplicated category names mean they are different products that falls into the same product category.
+Top-selling product categories are bed bath table, health beauty, sports leisure, furniture decor, and computers accessories.
 
 ```sql
 --Identify the categories of order status
@@ -103,4 +104,20 @@ Result:
 2018|54011|52783|97.73|334|0.62|894|1.66
 
 Over the years, the majority of orders have been successfully delivered to the customers. The percentage of canceled and incomplete orders is significantly lower than the percentage of successful orders.
+
+```sql
+--Identify product volume and compare with product weight and freight value
+SELECT
+	p.product_id,
+	t.product_category_name_english,
+	(p.product_length_cm * p.product_height_cm * p.product_width_cm) AS product_volume,
+	p.product_weight_g,
+	oi.freight_value
+FROM products p
+JOIN order_items oi
+ON p.product_id = oi.product_id
+JOIN translations t 
+ON p.product_category_name = t.product_category_name;
+```
+While freight value is calculated based on the product's weight and measurement, in this dataset the freight values are already provided.
 
