@@ -1,3 +1,6 @@
+### Product Analysis & Trends - Brazil E-commerce
+**Author: Aufar Tirta**
+
 ```sql
 --Identify cities with the most customers
 SELECT customer_city, customer_state, COUNT(customer_unique_id) AS total_customers_per_city
@@ -32,7 +35,7 @@ rio de janeiro|RJ|93
 belo horizonte|MG|66
 ribeirao preto|SP|52
 
-We can see the dominance of São Paulo, Rio de Janeiro, Belo Horizonte, and Curitiba.
+We can see the dominance of São Paulo, Rio de Janeiro, Belo Horizonte, and Curitiba. This result is also consistent with the findings of top city with the most orders below.
 
 ```sql
 --Identify total orders from every city
@@ -54,11 +57,14 @@ LIMIT 5;
 ```
 Result:
 |customer_city|customer_state|total_order|total_order_value|total_payment_value
+|---|---|---|---|---|
 sao paulo|SP|18590|2275610.60|2839903.47
-rio de janeiro|RJ|8202	1201226.5500000168	1566591.4899999963
-belo horizonte|MG|3247	430460.59999999555	501261.5000000003
-brasilia|DF|2457	364115.1599999979	430499.4299999996
-curitiba|PR|1809	252659.5399999994	329321.5399999998
+rio de janeiro|RJ|8202|1201226.55|1566591.48
+belo horizonte|MG|3247|430460.59|501261.50
+brasilia|DF|2457|364115.15|430499.42
+curitiba|PR|1809|252659.53|329321.53
+
+São Paulo, Rio de Janeiro, Belo Horizonte, and Curitiba remain at the top cities with the most orders and transactions. Brasilia, while lacking numbers in total sellers, is in the top 5 cities with the most customers. 
 
 ```sql
 --Identify the most ordered products; translate to English
@@ -147,7 +153,7 @@ ON p.product_id = oi.product_id
 JOIN translations t 
 ON p.product_category_name = t.product_category_name;
 ```
-While freight value is calculated based on the product's weight and measurement, in this dataset the freight values are already provided.
+While freight value is calculated based on the product's weight and measurement, freight values are already provided in this dataset.
 
 ```sql
 --Identify Total Order Values per Product Category
@@ -184,21 +190,87 @@ ferramentas_jardim|garden_tools|584219.21
 The total order value is calculated by multiplying the number of products by the sum of their price and freight cost. As shown in the table above, the product categories with the highest order values are health beauty, watches gifts, bed bath table, sports leisure, and computer accessories. When compared to the previous table displaying the most ordered products, many of these categories reappear, indicating that they are both top-selling and highly profitable.
 
 ```sql
---Identify The Most Common Type of Payment
+--Identify products with highest rating
+SELECT * FROM order_reviews
+WHERE review_score >= 4
+ORDER BY review_score DESC;
+
+--Identify percentage of well-reviewed products
 SELECT
-	payment_type,
-	COUNT(*) AS amount,
-	ROUND(SUM(payment_value::INTEGER), 2) AS total_value
-FROM order_payments
-GROUP BY payment_type
-ORDER BY amount DESC;
+	COUNT(*) AS total_order,
+	(SELECT COUNT (*) FROM order_reviews WHERE review_score >=4) as number_of_good_products,
+	ROUND(((SELECT COUNT(*) FROM order_reviews WHERE review_score >=4)*100.0 / COUNT(*)),2) AS good_product_percentage
+FROM order_reviews;
 ```
 Result:
-|payment_type|amount|total_value
+|total_order|number_of_good_products|good_product_percentage
 |---|---|---|
-credit_card|76795|12542393.00
-boleto|19784|2869488.00
-voucher|5775|379391.00
-debit_card|1529|218002.00
-not_defined|3|0.00
+99224|76470|77.07
 
+Overall, 77.07% of products sold are well-reviewed (>4 scores).
+
+```sql
+--Identify high performing product categories
+SELECT 
+    t.product_category_name_english,
+    SUM(r.review_score) AS total_score
+FROM order_reviews r
+JOIN order_items oi ON r.order_id = oi.order_id
+JOIN products p ON oi.product_id = p.product_id
+LEFT JOIN translations t ON p.product_category_name = t.product_category_name
+GROUP BY
+    t.product_category_name_english
+ORDER BY total_score DESC
+LIMIT 5;
+```
+Result:
+|product_category_name_english|total_score
+|---|---|
+bed_bath_table|43386
+health_beauty|39957
+sports_leisure|35493
+furniture_decor|32520
+computers_accessories|30853
+
+Total scores were calculated for each product category. Top reviewed product categories bed bath table, health beauty, sports leisure, furniture decor, and computer accessories.
+
+```sql
+--Identify high-performing sellers
+SELECT
+	s.seller_id,
+	s.seller_city,
+	s.seller_state,
+	SUM(r.review_score) AS total_score
+FROM order_reviews r
+JOIN order_items oi ON r.order_id = oi.order_id
+JOIN sellers s ON oi.seller_id = s.seller_id
+GROUP BY
+	s.seller_id,
+	s.seller_city,
+	s.seller_state
+ORDER BY total_score DESC;
+
+--Identify cities with high-performing sellers
+SELECT
+	s.seller_city,
+	s.seller_state,
+	SUM(r.review_score) AS total_score
+FROM order_reviews r
+JOIN order_items oi ON r.order_id = oi.order_id
+JOIN sellers s ON oi.seller_id = s.seller_id
+GROUP BY	
+	s.seller_city,
+	s.seller_state
+ORDER BY total_score DESC
+LIMIT 5;
+```
+Result:
+|seller_city|seller_state|total_score
+|---|---|---|
+sao paulo|SP|111989
+ibitinga|SP|29567
+curitiba|PR|12500
+santo andre|SP|12284
+sao jose do rio preto|SP|10251
+
+Cities with high-rated sellers are São Paulo, Ibtinga, Curitiba, Santo André, and São José do Rio Preto.
