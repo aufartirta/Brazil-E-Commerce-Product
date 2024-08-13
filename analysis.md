@@ -91,12 +91,9 @@ SELECT
 	ROUND((COUNT(CASE WHEN order_status = 'canceled' THEN 1 END) * 100.0 / COUNT(*)), 2) AS cancel_percentage,
 	COUNT(CASE WHEN order_status IN ('shipped', 'processing', 'approved','created', 'invoiced', 'unavailable') THEN 1 END) AS incomplete_orders,
 	ROUND((COUNT(CASE WHEN order_status IN ('shipped', 'processing', 'approved','created', 'invoiced', 'unavailable') THEN 1 END) * 100.0 / COUNT(*)), 2) AS incomplete_percentage
-FROM
-	orders
-GROUP BY
-	EXTRACT(YEAR FROM order_purchase_timestamp)
-ORDER BY
-	year;
+FROM orders
+GROUP BY EXTRACT(YEAR FROM order_purchase_timestamp)
+ORDER BY year;
 ```
 Result:
 |year|total_orders|succesful_orders|succesful_percentage|canceled_order|cancel_percentage|incomplete_orders|incomplete_percentage|
