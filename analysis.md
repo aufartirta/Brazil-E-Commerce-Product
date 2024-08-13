@@ -34,7 +34,7 @@ We can see the dominance of São Paulo, Rio de Janeiro, Belo Horizonte, and Curi
 
 ```sql
 --Identify the most ordered products; translate to English
-SELECT 
+SELECT
 	p.product_category_name,
 	t.product_category_name_english,
 	COUNT(oi.product_id) AS total_order
@@ -83,20 +83,20 @@ There are 8 different order statuses based on the final stage of product deliver
 ```sql
 --Compare order statuses trend over the years
 SELECT
-    EXTRACT(YEAR FROM order_purchase_timestamp) AS year,
-    COUNT(*) AS total_orders,
-    COUNT(CASE WHEN order_status = 'delivered' THEN 1 END) AS successful_orders,
-    ROUND((COUNT(CASE WHEN order_status = 'delivered' THEN 1 END) * 100.0 / COUNT(*)), 2) AS success_percentage,
-	  COUNT(CASE WHEN order_status = 'canceled' THEN 1 END) AS canceled_orders,
-    ROUND((COUNT(CASE WHEN order_status = 'canceled' THEN 1 END) * 100.0 / COUNT(*)), 2) AS cancel_percentage,
-	  COUNT(CASE WHEN order_status IN ('shipped', 'processing', 'approved','created', 'invoiced', 'unavailable') THEN 1 END) AS incomplete_orders,
-	  ROUND((COUNT(CASE WHEN order_status IN ('shipped', 'processing', 'approved','created', 'invoiced', 'unavailable') THEN 1 END) * 100.0 / COUNT(*)), 2) AS incomplete_percentage
+	EXTRACT(YEAR FROM order_purchase_timestamp) AS year,
+	COUNT(*) AS total_orders,
+    	COUNT(CASE WHEN order_status = 'delivered' THEN 1 END) AS successful_orders,
+	ROUND((COUNT(CASE WHEN order_status = 'delivered' THEN 1 END) * 100.0 / COUNT(*)), 2) AS success_percentage,
+	COUNT(CASE WHEN order_status = 'canceled' THEN 1 END) AS canceled_orders,
+	ROUND((COUNT(CASE WHEN order_status = 'canceled' THEN 1 END) * 100.0 / COUNT(*)), 2) AS cancel_percentage,
+	COUNT(CASE WHEN order_status IN ('shipped', 'processing', 'approved','created', 'invoiced', 'unavailable') THEN 1 END) AS incomplete_orders,
+	ROUND((COUNT(CASE WHEN order_status IN ('shipped', 'processing', 'approved','created', 'invoiced', 'unavailable') THEN 1 END) * 100.0 / COUNT(*)), 2) AS incomplete_percentage
 FROM
-    orders
+	orders
 GROUP BY
-    EXTRACT(YEAR FROM order_purchase_timestamp)
+	EXTRACT(YEAR FROM order_purchase_timestamp)
 ORDER BY
-    year;
+	year;
 ```
 Result:
 |year|total_orders|succesful_orders|succesful_percentage|canceled_order|cancel_percentage|incomplete_orders|incomplete_percentage|
