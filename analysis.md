@@ -1,6 +1,7 @@
-### Product Analysis & Trends - Brazil E-commerce
-**Author: Aufar Tirta**
+## Product Analysis & Trends - Brazil E-commerce
+Author: Aufar Tirta
 
+### 1. Customers & Sellers Profile
 ```sql
 --Identify cities with the most customers
 SELECT customer_city, customer_state, COUNT(customer_unique_id) AS total_customers_per_city
@@ -66,6 +67,7 @@ curitiba|PR|1809|252659.53|329321.53
 
 São Paulo, Rio de Janeiro, Belo Horizonte, and Curitiba remain at the top cities with the most orders and transactions. Brasilia, while lacking numbers in total sellers, is in the top 5 cities with the most customers. 
 
+### 2. Products Profile
 ```sql
 --Identify the most ordered products; translate to English
 SELECT 
@@ -97,6 +99,27 @@ automotivo|auto|4235
 
 Top-selling product categories are bed bath table, health beauty, sports leisure, furniture decor, and computers accessories.
 
+```sql
+--Identify the most popular products based on region
+SELECT DISTINCT ON (c.customer_state)
+    c.customer_state,
+    t.product_category_name_english,
+    COUNT(o.order_id) AS total_order
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+JOIN order_items oi ON o.order_id = oi.order_id
+JOIN products p ON oi.product_id = p.product_id
+LEFT JOIN translations t ON p.product_category_name = t.product_category_name
+GROUP BY 
+    c.customer_state,
+    t.product_category_name_english
+ORDER BY 
+    c.customer_state, 
+    COUNT(o.order_id) DESC;
+```
+Top-selling products per region were identified; the results correlate with the previous table about overall top-selling products.
+
+### 3. Order & Delivery
 ```sql
 --Identify the categories of order status
 SELECT DISTINCT order_status FROM orders;
@@ -138,6 +161,27 @@ Result:
 2018|54011|52783|97.73|334|0.62|894|1.66
 
 Over the years, the majority of orders have been successfully delivered to the customers. The percentage of canceled and incomplete orders is significantly lower than the percentage of successful orders.
+
+```sql
+--Identify months with highest transactions
+SELECT 
+    EXTRACT(MONTH FROM order_purchase_timestamp) AS month, 
+	EXTRACT(YEAR FROM order_purchase_timestamp) AS year,
+    payment_type,
+    COUNT(*) AS total_transactions,
+    SUM(payment_value) AS total_payment_value
+FROM 
+    order_payments
+JOIN 
+    orders ON order_payments.order_id = orders.order_id
+GROUP BY 
+    EXTRACT(MONTH FROM order_purchase_timestamp),
+	EXTRACT(YEAR FROM order_purchase_timestamp),
+	payment_type
+ORDER BY 
+    total_transactions DESC;
+```
+The number of transactions generally increases over time. However, the number of transactions peaked in November 2017, which is possibly linked to promotional events such as Black Friday.
 
 ```sql
 --Identify product volume and compare with product weight and freight value
@@ -189,6 +233,7 @@ ferramentas_jardim|garden_tools|584219.21
 
 The total order value is calculated by multiplying the number of products by the sum of their price and freight cost. As shown in the table above, the product categories with the highest order values are health beauty, watches gifts, bed bath table, sports leisure, and computer accessories. When compared to the previous table displaying the most ordered products, many of these categories reappear, indicating that they are both top-selling and highly profitable.
 
+### 4. Product Ratings & Performances
 ```sql
 --Identify products with highest rating
 SELECT * FROM order_reviews
@@ -274,3 +319,34 @@ santo andre|SP|12284
 sao jose do rio preto|SP|10251
 
 Cities with high-rated sellers are São Paulo, Ibtinga, Curitiba, Santo André, and São José do Rio Preto.
+
+```sql
+--Identify low-perforing product categories
+SELECT 
+	t.product_category_name_english,
+	COUNT(oi.product_id) AS total_order,
+	SUM(r.review_score) AS total_score
+FROM order_reviews r 
+JOIN order_items oi ON r.order_id = oi.order_id
+JOIN products p ON oi.product_id = p.product_id
+LEFT JOIN translations t ON p.product_category_name = t.product_category_name
+GROUP BY
+	t.product_category_name_english
+ORDER BY total_score
+LIMIT 10;
+```
+Result:
+|product_category_name_english|total_order|total_score
+|---|---|---|
+security_and_services|2|5
+pc_games|9|30
+fashion_childrens_clothes|8|36
+portable_kitchen_food_preparations|15|49
+la_cuisine|13|52
+cds_dvds_musicals|14|65
+home_comfort_2|27|98
+arts_and_craftmanship|24|99
+diapers_and_hygiene|39|127
+fashion_sport|31|132
+
+Lowest-performing products were identified. Products with the lowest scores are also products with the least sales. Among them are security and services, pc games, fashion children clothes, portable kitchen and food preparations, and la cuisine.
