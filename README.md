@@ -1,4 +1,4 @@
-# Product Analysis & Trends - Brazil E-commerce
+# Product Trends & Analysis - Brazil E-commerce
 ## Project Overview
 
 ### Objective:
