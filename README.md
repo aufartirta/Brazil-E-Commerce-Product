@@ -2,7 +2,7 @@
 ## Project Overview
 
 ### Objective:
-The project aims to analyze and identify product trends, customer behavior, and seller distribution within the Brazilian e-commerce platform Olist. The goal is to derive actionable insights into key performance metrics, such as top-selling product categories, geographical distribution of customers and sellers, order status trends, and overall customer satisfaction.
+The project aims to analyze and identify product trends and customer & seller distribution within the Brazilian e-commerce platform Olist. The goal is to derive actionable insights into key performance metrics, such as top-selling product categories, geographical distribution of customers and sellers, order status trends, and overall customer satisfaction.
 
 ### Data Sources:
 The project utilizes the Brazilian E-commerce Olist dataset, which includes interconnected data on customer orders, products, sellers, geolocation, payments, and reviews.
